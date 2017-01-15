@@ -1,6 +1,11 @@
+
+// Mesh has much greater memory requirements, and you may need to limit the
+// max message length to prevent wierd crashes
+#define RH_MESH_MAX_MESSAGE_LEN 50
+
 #include <NMEAGPS.h>
 #include "GPSPort.h"
-#include <RHReliableDatagram.h>
+#include <RHMesh.h>
 #include <RH_RF69.h>
 #include <SPI.h>
 
@@ -13,17 +18,17 @@
 #define BELLIGERENCE F("ΒΣLLIGΣRΣΠCΣ") //handy string to send
 
 // Singleton instance of the radio driver
-
 RH_RF69 driver(8, 7); // Adafruit Feather 32u4
 
 // Class to manage message delivery and receipt, using the driver declared above
-RHReliableDatagram manager(driver, CHURCH_NODE);
+RHMesh manager(driver, CHURCH_NODE);
 
 // Dont put this on the stack:
 uint8_t buf[RH_RF69_MAX_MESSAGE_LEN];
 
 
 void setup() {
+  
   pinMode(LED_RED, OUTPUT);
   pinMode(LED_GREEN, OUTPUT);
 
@@ -40,18 +45,35 @@ void setup() {
 
   // If you are using a high power RF69, you *must* set a Tx power in the
   // range 14 to 20 like this:
-  // driver.setTxPower(14);
+  driver.setTxPower(20);
+  driver.setModemConfig(RH_RF69::GFSK_Rb2Fd5 );
    digitalWrite(LED_GREEN, LOW);
    digitalWrite(LED_RED, HIGH);
 }
 
 int packetCounter = 0;
+bool ledState = true;
 
+void toggleState()
+{
+  if (ledState) 
+  {
+   digitalWrite(LED_GREEN, LOW);
+   digitalWrite(LED_RED, HIGH);
+  }
+  else
+  {
+     digitalWrite(LED_GREEN, HIGH);
+     digitalWrite(LED_RED, LOW);
+  }
+  ledState = !ledState;
+  
+}
 void loop() {
   // put your main code here, to run repeatedly:
-   if (manager.available())
+  toggleState();
+  if (true)//manager.available())
   {
-     
     // Serial.println(packetCounter);
     // Wait for a message addressed to us from the client
     uint8_t len = sizeof(buf);
