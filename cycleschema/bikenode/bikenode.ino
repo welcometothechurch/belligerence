@@ -16,10 +16,11 @@
 
 #define LED_RED 10
 #define LED_GREEN 12
-
-#define CHURCH_NODE 1 //The base node at camp ΒΣLLIGΣRΣΠCΣ
-#define BIKE_NODE 2 //Which network node are we? 2..n for bikes 1..n-1
+ 
+#define CHURCH_NODE 0 //The base node at camp ΒΣLLIGΣRΣΠCΣ
+#define BIKE_NODE 3 //Which network node are we? 1..n for bikes 1..n
 #define BELLIGERENCE "ΒΣLLIGΣRΣΠCΣ" //handy string to send
+
 
 // Singleton instance of the radio driver
 RH_RF69 driver(8, 7); // Adafruit Feather 32u4
@@ -53,15 +54,25 @@ typedef struct bikedata {
 bike_data bikeData;
 
 
+//Is it our turn to talk?
+// Implement a simple time-division multiplexing thing so that our messages have a 
+// chance of navigating the low-speed mesh before another bike yells its coordinates.
+inline bool myTurn(NeoGPS::clock_t *epochtime)
+{
+ 
+   return BIKE_NODE == ((*epochtime) % 5) ;
+}
+
 //Interrupt service routine for char-at-a-time update from the GPS string
 static void GPSisr( uint8_t c )
 {
   gps.handle( c );
+  //toggleLEDs();
 } // GPSisr
 
 
 
-void toggleLEDs()
+inline void toggleLEDs()
 {
   static bool ledState = true;
   if (ledState)
@@ -100,15 +111,17 @@ void setup() {
   driver.setTxPower(20);
   driver.setModemConfig(RH_RF69::GFSK_Rb2Fd5 );
 
+  manager.setRetries(1);
+  manager.setTimeout(1000);
 
   //Start the UART for the GPS device
   NeoSerial1.attachInterrupt( GPSisr );
   NeoSerial1.begin( 9600 );
-  Serial.begin(115200);
-  /*while (!Serial)
+  /*Serial.begin(115200);
+  while (!Serial)
 
     ;
-    Serial.println("Serial, Yo.");*/
+    Serial.println("Serial, Yo.");/**/
   toggleLEDs();
   delay(100);
   toggleLEDs();
@@ -124,12 +137,14 @@ void setup() {
 
 uint8_t data[] = BELLIGERENCE;
 // Dont put this on the stack:
-uint8_t buf[RH_RF69_MAX_MESSAGE_LEN];
+static uint8_t buf[RH_RF69_MAX_MESSAGE_LEN];
+static uint8_t len = sizeof(buf);
 
 static gps_fix         fix;
 
 void loop() {
   toggleLEDs();
+  manager.recvfromAckTimeout(buf, &len, 10);//Forward any messages that aren't ours?
   while (gps.available()) {
     fix      = gps.read();
     //trace_all( Serial, gps, fix);
@@ -156,29 +171,14 @@ void loop() {
     //Serial.println("Blorp:");
     //Serial.write((uint8_t * ) &aFix, sizeof(aFix));
     //Serial.println(fix_data.latitude());
-
-
-    if (fix.valid.location) //only send data if it's valid
+   
+    if ( fix.valid.time && myTurn(&(bikeData.epochtime))) //only send data if it's valid and its our turn to talk.
     {
-      int retrycount;
-      retrycount = 0;
-      while (manager.sendtoWait((uint8_t * ) &bikeData, sizeof(bikeData), CHURCH_NODE) != RH_ROUTER_ERROR_NONE)
+     if (manager.sendtoWait((uint8_t * ) &bikeData, sizeof(bikeData), CHURCH_NODE) != RH_ROUTER_ERROR_NONE)
       {
-        Serial.print(retrycount);
-        if (retrycount > 10)
-        {
-          break;
-        }
-        retrycount++;
+        ;
       }
-      
-      Serial.print(" time : ");
-      Serial.print(bikeData.epochtime);
-      Serial.print(" lat: ");
-      Serial.print(bikeData.latitude);
-      Serial.print(" lon: ");
-      Serial.print(bikeData.longitude);
-      Serial.println();
+    
     }
 
   }

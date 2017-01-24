@@ -9,9 +9,7 @@
 #define LED_GREEN 12
 
 
-#define CHURCH_NODE 1 //The base node at camp ΒΣLLIGΣRΣΠCΣ
-#define BIKE_NODE 2 //Which network node are we? 2..n for bikes 1..n-1
-#undef BIKE_NODE
+#define CHURCH_NODE 0 //The base node at camp ΒΣLLIGΣRΣΠCΣ
 #define BELLIGERENCE F("ΒΣLLIGΣRΣΠCΣ") //handy string to send
 
 
@@ -54,6 +52,9 @@ void setup() {
   // range 14 to 20 like this:
   driver.setTxPower(20);
   driver.setModemConfig(RH_RF69::GFSK_Rb2Fd5 );
+
+  manager.setRetries(2);
+  manager.setTimeout(1000);
    digitalWrite(LED_GREEN, LOW);
    digitalWrite(LED_RED, HIGH);
 }
@@ -106,8 +107,8 @@ void loop() {
       }
       Serial.print("message# ");
       Serial.print(packetCounter);
-      Serial.print(". got message from : 0x");
-      Serial.print(from, HEX);
+      Serial.print(". got message from bike: ");
+      Serial.print(from, DEC);
       
       Serial.print(" time : ");
       Serial.print(bikeData.epochtime);
