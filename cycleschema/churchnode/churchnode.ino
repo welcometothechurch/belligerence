@@ -17,6 +17,7 @@ typedef struct bikedata {
   NeoGPS::clock_t epochtime;
   int32_t latitude;
   int32_t longitude;
+  uint16_t batteryVoltage;
 } bike_data;
 
 // Mesh has much greater memory requirements, and you may need to limit the
@@ -35,6 +36,26 @@ RHMesh manager(driver, CHURCH_NODE);
 // Dont put this on the stack:
 uint8_t buf[RH_MESH_MAX_MESSAGE_LEN];
 
+//Separator character for our serial output
+static char separator[] = ",";
+#define PRINT_SEPARATOR Serial.print(separator);
+
+//only slightly better than inlining all the print code :)
+void emitBikeData(uint8_t *node,bike_data *bikeData)
+{
+  Serial.print(*node);
+  PRINT_SEPARATOR
+  Serial.print(bikeData->epochtime);
+  PRINT_SEPARATOR
+  Serial.print(bikeData->latitude);
+  PRINT_SEPARATOR
+  Serial.print(bikeData->longitude);
+  PRINT_SEPARATOR
+  Serial.print(bikeData->batteryVoltage);
+  Serial.println();
+  
+   
+}
 
 void setup() {
   
@@ -78,18 +99,13 @@ void toggleState()
   
 }
 
-void blinkRed()
-{
-  //turn green off
-  
-}
 
 void loop() {
   // put your main code here, to run repeatedly:
 
-  static uint8_t len = sizeof(buf);
-  static uint8_t from;
-  static bike_data bikeMessage;
+  uint8_t len = sizeof(buf);
+  uint8_t from;
+  //static bike_data bikeMessage;
   toggleState();
   if (true)//manager.available())
   {
@@ -104,8 +120,10 @@ void loop() {
         Serial.print(sizeof(bikeData));
         Serial.print(" recieved: ");
         Serial.print(len);
+        Serial.println();
       }
-      Serial.print("message# ");
+      emitBikeData(&from,&bikeData);
+      /*Serial.print("message# ");
       Serial.print(packetCounter);
       Serial.print(". got message from bike: ");
       Serial.print(from, DEC);
@@ -117,6 +135,7 @@ void loop() {
       Serial.print(" lon: ");
       Serial.print(bikeData.longitude);
       Serial.println();
+     /**/
      
 
       // Send a reply back to the originator client

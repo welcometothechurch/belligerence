@@ -16,9 +16,9 @@
 
 #define LED_RED 10
 #define LED_GREEN 12
- 
+
 #define CHURCH_NODE 0 //The base node at camp ΒΣLLIGΣRΣΠCΣ
-#define BIKE_NODE 3 //Which network node are we? 1..n for bikes 1..n
+#define BIKE_NODE 1 //Which network node are we? 1..n for bikes 1..n
 #define BELLIGERENCE "ΒΣLLIGΣRΣΠCΣ" //handy string to send
 
 
@@ -45,6 +45,7 @@ typedef struct bikedata {
   NeoGPS::clock_t epochtime;
   int32_t latitude;
   int32_t longitude;
+  uint16_t batteryVoltage;
 } bike_data;
 
 // Mesh has much greater memory requirements, and you may need to limit the
@@ -55,12 +56,12 @@ bike_data bikeData;
 
 
 //Is it our turn to talk?
-// Implement a simple time-division multiplexing thing so that our messages have a 
+// Implement a simple time-division multiplexing thing so that our messages have a
 // chance of navigating the low-speed mesh before another bike yells its coordinates.
 inline bool myTurn(NeoGPS::clock_t *epochtime)
 {
- 
-   return BIKE_NODE == ((*epochtime) % 5) ;
+
+  return BIKE_NODE == ((*epochtime) % 5) ;
 }
 
 //Interrupt service routine for char-at-a-time update from the GPS string
@@ -70,7 +71,19 @@ static void GPSisr( uint8_t c )
   //toggleLEDs();
 } // GPSisr
 
+//Return our battery voltage as an unsigned integer, save those bytes!
+uint16_t readBatteryVoltage()
+{
+#define VBATPIN A9
 
+  float measuredvbat = analogRead(VBATPIN);
+  measuredvbat *= 2;    // we divided by 2, so multiply back
+  measuredvbat *= 3.3;  // Multiply by 3.3V, our reference voltage
+  measuredvbat /= 1024; // convert to voltage
+  measuredvbat *=  100; //scale to a nice integer
+  return (uint16_t) measuredvbat; //cast to an integer
+  //Serial.print("VBat: " ); Serial.println(measuredvbat);
+}
 
 inline void toggleLEDs()
 {
@@ -118,7 +131,7 @@ void setup() {
   NeoSerial1.attachInterrupt( GPSisr );
   NeoSerial1.begin( 9600 );
   /*Serial.begin(115200);
-  while (!Serial)
+    while (!Serial)
 
     ;
     Serial.println("Serial, Yo.");/**/
@@ -158,6 +171,8 @@ void loop() {
       bikeData.latitude = 999;
       bikeData.longitude = 999;
     }
+    //get the battery voltage
+    bikeData.batteryVoltage = readBatteryVoltage();
 
     if (fix.valid.time)
     {
@@ -171,14 +186,14 @@ void loop() {
     //Serial.println("Blorp:");
     //Serial.write((uint8_t * ) &aFix, sizeof(aFix));
     //Serial.println(fix_data.latitude());
-   
+
     if ( fix.valid.time && myTurn(&(bikeData.epochtime))) //only send data if it's valid and its our turn to talk.
     {
-     if (manager.sendtoWait((uint8_t * ) &bikeData, sizeof(bikeData), CHURCH_NODE) != RH_ROUTER_ERROR_NONE)
+      if (manager.sendtoWait((uint8_t * ) &bikeData, sizeof(bikeData), CHURCH_NODE) != RH_ROUTER_ERROR_NONE)
       {
         ;
       }
-    
+
     }
 
   }
