@@ -1,4 +1,4 @@
-Python script for reading CycleSchema data from a serial port and loading it into a SQLite database.
+Python script for reading CycleSchema data from a serial port and loading it into an SQLite database.
 
 The script expects to find a SQLite db file called "cs.sqlite", rename one of the supplied samples as needed.
 
