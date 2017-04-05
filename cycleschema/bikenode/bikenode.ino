@@ -18,7 +18,7 @@
 #define LED_GREEN 12
 
 #define CHURCH_NODE 0 //The base node at camp ΒΣLLIGΣRΣΠCΣ
-#define BIKE_NODE 1 //Which network node are we? 1..n for bikes 1..n
+#define BIKE_NODE 5 //Which network node are we? 1..n for bikes 1..n
 #define BELLIGERENCE "ΒΣLLIGΣRΣΠCΣ" //handy string to send
 
 
@@ -61,7 +61,7 @@ bike_data bikeData;
 inline bool myTurn(NeoGPS::clock_t *epochtime)
 {
 
-  return BIKE_NODE == ((*epochtime) % 5) ;
+  return BIKE_NODE == ((*epochtime) % 5) + 1 ;
 }
 
 //Interrupt service routine for char-at-a-time update from the GPS string
@@ -104,8 +104,8 @@ inline void toggleLEDs()
 
 
 void setup() {
-  pinMode(LED_RED, OUTPUT);
-  pinMode(LED_GREEN, OUTPUT);
+  //pinMode(LED_RED, OUTPUT); // LEDs disabled in prod to save battery
+  //pinMode(LED_GREEN, OUTPUT);
 
   digitalWrite(LED_GREEN, HIGH);
   digitalWrite(LED_RED, LOW);
@@ -121,7 +121,7 @@ void setup() {
 
   // If you are using a high power RF69, you *must* set a Tx power in the
   // range 14 to 20 like this:
-  driver.setTxPower(20);
+  driver.setTxPower(20, true); // true here means we have a high-power RFM69
   driver.setModemConfig(RH_RF69::GFSK_Rb2Fd5 );
 
   manager.setRetries(1);
