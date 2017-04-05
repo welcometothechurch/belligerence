@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <avr/wdt.h>
 
 //local GPS conf
 #include <NeoHWSerial.h>
@@ -104,6 +105,8 @@ inline void toggleLEDs()
 
 
 void setup() {
+  //enable the watchdog
+  wdt_enable(WDTO_8S);
   pinMode(LED_RED, OUTPUT);
   pinMode(LED_GREEN, OUTPUT);
 
@@ -146,6 +149,8 @@ void setup() {
   toggleLEDs();
   delay(100);
   toggleLEDs();
+
+
 }
 
 uint8_t data[] = BELLIGERENCE;
@@ -156,9 +161,13 @@ static uint8_t len = sizeof(buf);
 static gps_fix         fix;
 
 void loop() {
+    //WoofTick!
+  wdt_reset();
+  
   toggleLEDs();
   manager.recvfromAckTimeout(buf, &len, 10);//Forward any messages that aren't ours?
   while (gps.available()) {
+    wdt_reset();
     fix      = gps.read();
     //trace_all( Serial, gps, fix);
     if ( fix.valid.location)
@@ -189,6 +198,7 @@ void loop() {
 
     if ( fix.valid.time && myTurn(&(bikeData.epochtime))) //only send data if it's valid and its our turn to talk.
     {
+       wdt_reset();
       if (manager.sendtoWait((uint8_t * ) &bikeData, sizeof(bikeData), CHURCH_NODE) != RH_ROUTER_ERROR_NONE)
       {
         ;
