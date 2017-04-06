@@ -80,12 +80,8 @@ void draw() {
   // clear background
   background(0);
 
-  // draw church
-  churchFrame = (churchFrame+1) % 20;
-  image(church[churchFrame], map(churchLat, x1, x2, screenPadding, screenWidth-screenPadding), map(churchLon, y1, y2, screenPadding, screenHeight-screenPadding), church[0].width * churchScale, church[0].height * churchScale);
-
+  // update bikes
   if (frameCount % updateFrequency == 0) {
-    // update bikes
     if (dbConnected) {
       getBounds();
       for (int i=0; i<5; i++) {
@@ -98,6 +94,10 @@ void draw() {
   for (int i=0; i<5; i++) {
     bikes[i].drawBike();
   }
+
+  // draw church
+  churchFrame = (churchFrame+1) % 20;
+  image(church[churchFrame], map(churchLat, x1, x2, screenPadding, screenWidth-screenPadding), map(churchLon, y1, y2, screenPadding, screenHeight-screenPadding), church[0].width * churchScale, church[0].height * churchScale);
 }
 
 void getBounds() {
@@ -185,7 +185,7 @@ class Bike {
 void keyPressed() {
   //println(keyCode);
   if (keyCode == 83) { // s - save screengrab
-     save("screengrabs/" + year() + nf(month(),2) + nf(day(),2) + "_"  + nf(hour(),2) + nf(minute(),2) + nf(second(),2) + ".png");
+    save("screengrabs/" + year() + nf(month(), 2) + nf(day(), 2) + "_"  + nf(hour(), 2) + nf(minute(), 2) + nf(second(), 2) + ".png");
   }
 }
 
