@@ -13,3 +13,5 @@ Search for BezierSQLib
 
 SQLite DB
 CREATE TABLE "bikes" ( `bikeid` INTEGER, `time` INTEGER, `lat` REAL, `lon` REAL, `batt` INTEGER )
+
+Press s to save current frame to disk
