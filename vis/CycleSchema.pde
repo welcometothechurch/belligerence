@@ -23,7 +23,7 @@ float churchLon = 118.330;
 float churchScale = 0.2;
 
 int framerate = 6; // mainly for the gif animation
-int updateFrequency = 6; // how often (in frames) to do a db update
+int updateFrequency = 360; // how often (in frames) to do a db update
 
 /** PROPERTIES **/
 SQLite db;
@@ -41,8 +41,8 @@ void setup() {
 
   frameRate(framerate);
   background(0);
-  //fullScreen();
-  size(1024, 768);
+  fullScreen();
+  //size(1024, 768);
   noCursor();
   smooth();
 
