@@ -182,6 +182,13 @@ class Bike {
   }
 }
 
+void keyPressed() {
+  //println(keyCode);
+  if (keyCode == 83) { // s - save screengrab
+     save("screengrabs/" + year() + nf(month(),2) + nf(day(),2) + "_"  + nf(hour(),2) + nf(minute(),2) + nf(second(),2) + ".png");
+  }
+}
+
 class BikeData {
 
   public int bikeid;
