@@ -124,8 +124,8 @@ void setup() {
   driver.setTxPower(20, true); // true here means we have a high-power RFM69
   driver.setModemConfig(RH_RF69::GFSK_Rb2Fd5 );
 
-  manager.setRetries(1);
-  manager.setTimeout(1000);
+  manager.setRetries(1); // Two tries at sending, but we need to be done and ready to forward other packets before our timeslot closes
+  manager.setTimeout(245); // Minimum timeout, actual value [timeout,...,timeout*2]
 
   //Start the UART for the GPS device
   NeoSerial1.attachInterrupt( GPSisr );
