@@ -97,7 +97,11 @@ void draw() {
 
   // draw church
   churchFrame = (churchFrame+1) % 20;
-  image(church[churchFrame], map(churchLat, x1, x2, screenPadding, screenWidth-screenPadding), map(churchLon, y1, y2, screenPadding, screenHeight-screenPadding), church[0].width * churchScale, church[0].height * churchScale);
+  image(church[churchFrame], 
+    map(churchLat, x1, x2, screenPadding, screenWidth-screenPadding) - (church[0].width * churchScale / 2), 
+    map(churchLon, y1, y2, screenPadding, screenHeight-screenPadding) - (church[0].height * churchScale / 2), 
+    church[0].width * churchScale, 
+    church[0].height * churchScale);
 }
 
 void getBounds() {
