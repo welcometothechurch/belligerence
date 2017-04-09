@@ -75,10 +75,10 @@ void setup() {
   // If you are using a high power RF69, you *must* set a Tx power in the
   // range 14 to 20 like this:
   driver.setTxPower(20, true); // True here means we have a high-power RFM69
-  driver.setModemConfig(RH_RF69::GFSK_Rb2Fd5 );
+  driver.setModemConfig(RH_RF69::GFSK_Rb4_8Fd9_6 );
 
-  manager.setRetries(1); // Two tries at sending, but we need to be done and ready to forward other packets before our timeslot closes
-  manager.setTimeout(245); // Minimum timeout, actual value [timeout,...,timeout*2]
+  manager.setRetries(4); // Two tries at sending, but we need to be done and ready to forward other packets before our timeslot closes
+  manager.setTimeout(99); // Minimum timeout, actual value [timeout,...,timeout*2]
 //   digitalWrite(LED_GREEN, LOW);
 //   digitalWrite(LED_RED, HIGH);
 //   Serial.println("init fin");
