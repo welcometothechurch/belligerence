@@ -58,12 +58,15 @@ void emitBikeData(uint8_t *node,bike_data *bikeData)
 }
 
 void setup() {
-  
-  pinMode(LED_RED, OUTPUT);
-  pinMode(LED_GREEN, OUTPUT);
-
-  digitalWrite(LED_GREEN, HIGH);
-  digitalWrite(LED_RED, LOW);
+  Serial.begin(9600);
+// No LEDs on the church node
+//  pinMode(LED_RED, OUTPUT);
+//  pinMode(LED_GREEN, OUTPUT);
+//
+//  digitalWrite(LED_GREEN, HIGH);
+//  digitalWrite(LED_RED, LOW);
+//
+//  delay(3000); // Wait for serial monitor
   
   if (!manager.init())
     Serial.println("init failed");
@@ -71,33 +74,34 @@ void setup() {
 
   // If you are using a high power RF69, you *must* set a Tx power in the
   // range 14 to 20 like this:
-  driver.setTxPower(20);
-  driver.setModemConfig(RH_RF69::GFSK_Rb2Fd5 );
+  driver.setTxPower(20, true); // True here means we have a high-power RFM69
+  driver.setModemConfig(RH_RF69::GFSK_Rb4_8Fd9_6 );
 
-  manager.setRetries(2);
-  manager.setTimeout(1000);
-   digitalWrite(LED_GREEN, LOW);
-   digitalWrite(LED_RED, HIGH);
+  manager.setRetries(4); // Two tries at sending, but we need to be done and ready to forward other packets before our timeslot closes
+  manager.setTimeout(99); // Minimum timeout, actual value [timeout,...,timeout*2]
+//   digitalWrite(LED_GREEN, LOW);
+//   digitalWrite(LED_RED, HIGH);
+//   Serial.println("init fin");
 }
 
 int packetCounter = 0;
 
-void toggleState()
-{
-  static bool ledState = true;
-  if (ledState) 
-  {
-   digitalWrite(LED_GREEN, LOW);
-   digitalWrite(LED_RED, HIGH);
-  }
-  else
-  {
-     digitalWrite(LED_GREEN, HIGH);
-     digitalWrite(LED_RED, LOW);
-  }
-  ledState = !ledState;
-  
-}
+//void toggleState()
+//{
+//  static bool ledState = true;
+//  if (ledState) 
+//  {
+//   digitalWrite(LED_GREEN, LOW);
+//   digitalWrite(LED_RED, HIGH);
+//  }
+//  else
+//  {
+//     digitalWrite(LED_GREEN, HIGH);
+//     digitalWrite(LED_RED, LOW);
+//  }
+//  ledState = !ledState;
+//  
+//}
 
 
 void loop() {
@@ -106,10 +110,10 @@ void loop() {
   uint8_t len = sizeof(buf);
   uint8_t from;
   //static bike_data bikeMessage;
-  toggleState();
+ // toggleState();
   if (true)//manager.available())
   {
-    // Serial.println(packetCounter);
+    //Serial.println(packetCounter);
     // Wait for a message addressed to us from the client
  
     if (manager.recvfromAck((uint8_t * ) &bikeData, &len, &from))
